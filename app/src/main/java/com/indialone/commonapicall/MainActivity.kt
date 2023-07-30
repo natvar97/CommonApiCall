@@ -1,14 +1,12 @@
 package com.indialone.commonapicall
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import com.indialone.commonapicall.databinding.ActivityMainBinding
-import com.indialone.commonapicall.extensions.observeLiveData
 import com.indialone.commonapicall.extensions.observeSharedFlow
 import com.indialone.commonapicall.extensions.observeStateFlow
-import com.indialone.commonapicall.network.NetworkResult
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -37,6 +35,15 @@ class MainActivity : AppCompatActivity() {
         observeSharedFlow(mViewModel.errorSharedFlow) {
             it?.let {
                 Log.e(TAG, "viewModelObservers: error -> ${it.code}, message -> ${it.message}")
+            }
+        }
+        observeStateFlow(mViewModel.isLoading) {
+            it?.let {
+                if (it.isLoading) {
+                    Log.e(TAG, "viewModelObservers: Loading Data")
+                } else {
+                    Log.e(TAG, "viewModelObservers: Data Loaded")
+                }
             }
         }
     }

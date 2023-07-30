@@ -26,6 +26,9 @@ class MainViewModel @Inject constructor(
     private val _errorSharedFlow = MutableSharedFlow<RecipesUiState.Error>()
     val errorSharedFlow: SharedFlow<RecipesUiState.Error> = _errorSharedFlow
 
+    private val _isLoading = MutableStateFlow(RecipesUiState.Loading(false))
+    val isLoading: StateFlow<RecipesUiState.Loading> = _isLoading
+
     init {
         viewModelScope.launch {
             search()
@@ -35,16 +38,22 @@ class MainViewModel @Inject constructor(
     private suspend fun search() {
         repository.search().collectLatest { apiResponse ->
             when(apiResponse) {
+                is NetworkResult.Loading -> {
+                    _isLoading.emit(RecipesUiState.Loading(isLoading = true))
+                }
                 is NetworkResult.Success -> {
+                    _isLoading.emit(RecipesUiState.Loading(isLoading = false))
                     _response.update {
                         _response.value.copy(response = apiResponse.data)
                     }
                 }
                 is NetworkResult.Error -> {
+                    _isLoading.emit(RecipesUiState.Loading(isLoading = false))
                     // handle another case for error
                     _errorSharedFlow.emit(RecipesUiState.Error(apiResponse.code, apiResponse.message))
                 }
                 is NetworkResult.Exception -> {
+                    _isLoading.emit(RecipesUiState.Loading(isLoading = false))
                     // handler another state flow for exception
                 }
             }
